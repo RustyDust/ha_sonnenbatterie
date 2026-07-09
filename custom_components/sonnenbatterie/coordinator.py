@@ -38,7 +38,10 @@ class SonnenbatterieCoordinator(DataUpdateCoordinator):
     TIMEOUT_TOTAL = 40
 
     def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry, serial: str) -> None:
-        LOGGER.info(f"Initializing SonnenbatterieCoordinator: {config_entry.data}")
+        # Never log secrets (password / Auth-Token) in clear text.
+        _safe = {k: ("***" if k in (CONF_PASSWORD, CONF_AUTH_TOKEN) else v)
+                 for k, v in config_entry.data.items()}
+        LOGGER.info(f"Initializing SonnenbatterieCoordinator: {_safe}")
 
         """ private attributes """
         self._batt_reserved_factor = 7.0    # fixed value, reseved percentage of total installed power for internal use
