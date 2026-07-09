@@ -46,12 +46,9 @@ class SonnenbatterieNumber(SonnenNumberEntity, NumberEntity):
         LOGGER.debug(f"NUMBER - async_set_native_value: {value} - {type(value)}")
         tag = self.entity_description.tag
         if tag.writable:
-            match tag.key:
-                case "number_charge":
-                    await self.coordinator.sbconn.sb2.charge_battery(int(value))
-                case "number_discharge":
-                    await self.coordinator.sbconn.sb2.discharge_battery(int(value))
-                case "battery_reserve":
-                    await self.coordinator.sbconn.sb2.set_battery_reserve(int(value))
-            await self.coordinator.async_request_refresh()
+            # Robust write: serialized (single-request webserver), session-safe
+            # (ensures a session / uses the static Auth-Token), retried once on a
+            # transient 401/timeout, then a LIGHT refresh (external controllers
+            # write every few seconds; a full refresh per write overloads it).
+            await self.coordinator.async_write_setpoint(tag.key, value)
         return None
