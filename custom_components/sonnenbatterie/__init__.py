@@ -227,7 +227,13 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
 
 async def async_unload_entry(hass, entry):
-    """Handle removal of an entry."""
+    """Handle removal of an entry.
+
+    Unload ALL platforms (not only SENSOR): otherwise select/number/button stay
+    loaded across a reload/reconfigure, and the next setup fails with
+    'Config entry ... has already been setup!' — leaving the setpoint numbers
+    missing.
+    """
     LOGGER.debug(f"Unloading config entry: {entry}")
-    return await hass.config_entries.async_forward_entry_unload(entry, Platform.SENSOR)
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
