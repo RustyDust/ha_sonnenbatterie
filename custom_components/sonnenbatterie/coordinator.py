@@ -1,4 +1,5 @@
 import asyncio
+import sys
 import traceback
 from datetime import timedelta
 from time import time
@@ -13,13 +14,22 @@ from sonnenbatterie import AsyncSonnenBatterie
 from custom_components.sonnenbatterie import LOGGER, DOMAIN, ATTR_SONNEN_DEBUG
 from .const import CONF_AUTH_TOKEN
 
-# Optional: the v2 (Auth-Token) client for the WRITE path — a static token from
-# the battery dashboard (Software-Integration) never expires, so writes don't hit
-# the session-token 401s. Imported defensively (older lib layouts).
-try:
-    from sonnenbatterie2.sonnenbatterie2 import AsyncSonnenBatterieV2
-except Exception:  # pragma: no cover - defensive
-    AsyncSonnenBatterieV2 = None
+def _v2_write_class():
+    """The v2 (Auth-Token) WRITE-client class, obtained WITHOUT declaring a new
+    dependency. It already ships with the `sonnenbatterie` package that provides
+    the session client (whose ``sb2`` IS an AsyncSonnenBatterieV2), so reach it
+    through that package's own module namespace. Only fall back to the
+    (transitively present) sub-package if the library's layout differs. A static
+    token from the battery dashboard never expires, so writes configured with one
+    don't hit the session-token 401s."""
+    mod = sys.modules.get(AsyncSonnenBatterie.__module__)
+    cls = getattr(mod, "AsyncSonnenBatterieV2", None)
+    if cls is None:
+        try:  # pragma: no cover - layout fallback
+            from sonnenbatterie2.sonnenbatterie2 import AsyncSonnenBatterieV2 as cls
+        except Exception:
+            cls = None
+    return cls
 
 
 class SonnenbatterieCoordinator(DataUpdateCoordinator):
@@ -69,9 +79,10 @@ class SonnenbatterieCoordinator(DataUpdateCoordinator):
         # otherwise writes go through the v1 session client (sbconn.sb2).
         self._write_v2 = None
         token = self._config_entry.data.get(CONF_AUTH_TOKEN)
-        if token and AsyncSonnenBatterieV2 is not None:
+        v2_cls = _v2_write_class() if token else None
+        if token and v2_cls is not None:
             try:
-                self._write_v2 = AsyncSonnenBatterieV2(
+                self._write_v2 = v2_cls(
                     self._config_entry.data[CONF_IP_ADDRESS], token)
                 self._relax_timeouts(self._write_v2)
                 LOGGER.info("sonnenbatterie: using static Auth-Token for setpoint writes")
