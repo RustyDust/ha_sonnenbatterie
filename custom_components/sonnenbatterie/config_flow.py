@@ -28,6 +28,9 @@ class SonnenbatterieFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Required(CONF_IP_ADDRESS, default="192.168.0.1"): str,
             vol.Required(CONF_USERNAME): vol.In(["User", "Installer"]),
             vol.Required(CONF_PASSWORD, default="sonnenUser3552"): str,
+            # Optional static Auth-Token (dashboard -> Software-Integration): when
+            # set, setpoint writes use it (no login, no session-token 401s).
+            vol.Optional(CONF_AUTH_TOKEN, default=""): str,
             vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): int,
             vol.Optional(ATTR_SONNEN_DEBUG, default=DEFAULT_SONNEN_DEBUG): cv.boolean,
         }
@@ -64,6 +67,7 @@ class SonnenbatterieFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_USERNAME: username,
                     CONF_PASSWORD: password,
                     CONF_IP_ADDRESS: ipaddress,
+                    CONF_AUTH_TOKEN: user_input.get(CONF_AUTH_TOKEN, ""),
                     CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
                     ATTR_SONNEN_DEBUG: user_input[ATTR_SONNEN_DEBUG],
                     CONF_SERIAL_NUMBER: sb_serial,
@@ -91,6 +95,10 @@ class SonnenbatterieFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Required(
                     CONF_PASSWORD,
                     default = entry.data.get(CONF_PASSWORD) or ""
+                ): str,
+                vol.Optional(
+                    CONF_AUTH_TOKEN,
+                    default = entry.data.get(CONF_AUTH_TOKEN) or ""
                 ): str,
                 vol.Required(
                     CONF_SCAN_INTERVAL,

@@ -6,6 +6,10 @@ from homeassistant.const import Platform
 SONNENBATTERIE_ISSUE_URL: Final = "https://github.com/weltmeyer/ha_sonnenbatterie/issues"
 
 CONF_SERIAL_NUMBER = "serial_number"
+# Optional static Auth-Token (battery dashboard -> Software-Integration). When
+# set, setpoint WRITES use the token-based v2 client (no login, no session
+# expiry -> no 401), while polling keeps using the username/password v1 client.
+CONF_AUTH_TOKEN = "auth_token"
 
 ATTR_SONNEN_DEBUG = "sonnenbatterie_debug"
 DOMAIN = "sonnenbatterie"
