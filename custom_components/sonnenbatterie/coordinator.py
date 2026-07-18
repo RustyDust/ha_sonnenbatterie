@@ -198,6 +198,10 @@ class SonnenbatterieCoordinator(DataUpdateCoordinator):
                 self.latestData["system_data"] = await self.sbconn.get_systemdata()
                 self.latestData["configurations"] = await self.sbconn.sb2.get_configurations()
                 self.latestData["api_configuration"] = await self.sbconn.get_api_configuration()
+                # fault flags rarely change; the ~3.3KB payload is the largest of any
+                # endpoint we poll, so keep it on the slow cadence with the other
+                # diagnostic/config data rather than fetching it every cycle
+                self.latestData["latestdata"] = await self.sbconn.sb2.get_latest_data()
                 self.latestData["commissioning_settings"] = await self.sbconn.get_commissioning_settings()
 
             self._last_error = None
