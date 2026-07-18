@@ -132,6 +132,12 @@
             "battery_system_health": {
                 "name": "Battery health"
             },
+            "battery_minimum_cell_temperature": {
+                "name": "Minimum cell temperature"
+            },
+            "battery_maximum_cell_temperature": {
+                "name": "Maximum cell temperature"
+            },
             "battery_installed_capacity_total": {
                 "name": "Battery total installed capacity"
             },

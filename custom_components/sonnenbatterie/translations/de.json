@@ -132,6 +132,12 @@
             "battery_system_health": {
                 "name": "Akkuzustand"
             },
+            "battery_minimum_cell_temperature": {
+                "name": "Minimale Zellentemperatur"
+            },
+            "battery_maximum_cell_temperature": {
+                "name": "Maximale Zellentemperatur"
+            },
             "battery_installed_capacity_total": {
                 "name": "Akku installierte Gesamtkapazität"
             },
