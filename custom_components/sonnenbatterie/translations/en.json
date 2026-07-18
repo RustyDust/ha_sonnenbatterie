@@ -198,6 +198,23 @@
             "battery_care": {
                 "name": "Battery care active"
             }
+        },
+        "binary_sensor": {
+            "latestdata_inverter_over_temperature": {
+                "name": "Inverter over temperature"
+            },
+            "latestdata_critical_bms_alarm": {
+                "name": "Critical BMS alarm"
+            },
+            "latestdata_hw_shutdown": {
+                "name": "Hardware shutdown"
+            },
+            "latestdata_grid_abnormal": {
+                "name": "Grid abnormal"
+            },
+            "latestdata_grid_detached": {
+                "name": "Grid detached"
+            }
         }
     },
     "services": {

@@ -198,6 +198,23 @@
             "battery_care": {
                 "name": "Batteriepflege aktiv"
             }
+        },
+        "binary_sensor": {
+            "latestdata_inverter_over_temperature": {
+                "name": "Wechselrichter Übertemperatur"
+            },
+            "latestdata_critical_bms_alarm": {
+                "name": "Kritischer BMS-Alarm"
+            },
+            "latestdata_hw_shutdown": {
+                "name": "Hardware-Abschaltung"
+            },
+            "latestdata_grid_abnormal": {
+                "name": "Netz anormal"
+            },
+            "latestdata_grid_detached": {
+                "name": "Netz getrennt"
+            }
         }
     },
     "services": {
