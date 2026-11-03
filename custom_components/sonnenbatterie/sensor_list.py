@@ -426,7 +426,6 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
         key="battery_installed_capacity_total",
         legacy_key="state_total_capacity_real",
         icon="mdi:battery-charging",
-        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="Wh",
         device_class=SensorDeviceClass.ENERGY_STORAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -439,7 +438,6 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
         key="battery_installed_capacity_usable",
         legacy_key="state_total_capacity_usable",
         icon="mdi:battery-charging",
-        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="Wh",
         device_class=SensorDeviceClass.ENERGY_STORAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -481,7 +479,6 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
         key="battery_storage_capacity_per_module",
         legacy_key="module_capacity",
         icon="mdi:battery-charging",
-        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="Wh",
         device_class=SensorDeviceClass.ENERGY_STORAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -495,7 +492,6 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
         key="battery_module_count",
         legacy_key="module_count",
         icon="mdi:battery",
-        state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         # all modules of a cascade, not only the master's
         value_fn=lambda coordinator: coordinator.latestData.get(
@@ -594,10 +590,13 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
     SonnenbatterieSensorEntityDescription(
         key="tou_max_power",
         icon="mdi:transmission-tower-import",
-        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="W",
+        device_class=SensorDeviceClass.POWER,
         entity_category=EntityCategory.DIAGNOSTIC,
+        # numeric string, e.g. '46000'; None (not 'unknown') when missing, as
+        # the POWER device class requires a numeric state
         value_fn=lambda coordinator: coordinator.latestData.get("commissioning_settings", {})
-                                     .get('data', {}).get('attributes',{}).get('tou_max_power_limit', 'unknown'),
+                                     .get('data', {}).get('attributes',{}).get('tou_max_power_limit'),
         entity_registry_enabled_default=True,
     ),
     SonnenbatterieSensorEntityDescription(
