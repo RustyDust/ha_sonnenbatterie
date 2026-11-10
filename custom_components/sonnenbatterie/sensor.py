@@ -37,7 +37,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entities(
         SonnenbatterieSensor(coordinator=coordinator, entity_description=description)
         for description in SENSORS
-        if description.value_fn(coordinator) is not None
+        if (description.exists_fn(coordinator) if description.exists_fn
+            else description.value_fn(coordinator) is not None)
     )
 
     async_add_entities(
