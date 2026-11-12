@@ -19,6 +19,10 @@ class SonnenbatterieSensorEntityDescription(SensorEntityDescription):
     legacy_key: str = None
     # exists_fn: Callable[[SonnenBatterieCoordinator], bool] = lambda _: True
     value_fn: Callable[[SonnenbatterieCoordinator], StateType]
+    # False: not created for a cascade's slave, where the value is meaningless
+    # (the meters are on the master) or a setting of the whole cascade
+    on_slave: bool = True
+    attrs_fn: Callable[[SonnenbatterieCoordinator], dict | None] | None = None
 
 def generate_powermeter_sensors(_coordinator):
     powermeter_sensors: list[SonnenbatterieSensorEntityDescription] = []
@@ -107,6 +111,7 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
     # consumption
     SonnenbatterieSensorEntityDescription(
         key="state_consumption_current",
+        on_slave=False,
         legacy_key="consumption_w",
         icon="mdi:home-lightning-bolt",
         state_class=SensorStateClass.MEASUREMENT,
@@ -118,6 +123,7 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
     ),
     SonnenbatterieSensorEntityDescription(
         key="state_consumption_avg",
+        on_slave=False,
         legacy_key="consumption_avg",
         icon="mdi:home-lightning-bolt",
         state_class=SensorStateClass.MEASUREMENT,
@@ -132,6 +138,7 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
     # production
     SonnenbatterieSensorEntityDescription(
         key="state_production",
+        on_slave=False,
         legacy_key="production_w",
         icon="mdi:solar-power",
         state_class=SensorStateClass.MEASUREMENT,
@@ -153,6 +160,7 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
     # grid
     SonnenbatterieSensorEntityDescription(
         key="state_grid_inout",
+        on_slave=False,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:transmission-tower",
         native_unit_of_measurement="W",
@@ -163,6 +171,7 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
     ),
     SonnenbatterieSensorEntityDescription(
         key="state_grid_in",
+        on_slave=False,
         legacy_key="state_grid_input",
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:transmission-tower-export",
@@ -180,6 +189,7 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
     ),
     SonnenbatterieSensorEntityDescription(
         key="state_grid_out",
+        on_slave=False,
         legacy_key="state_grid_output",
         icon="mdi:transmission-tower-import",
         state_class=SensorStateClass.MEASUREMENT,
@@ -513,7 +523,27 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
         entity_registry_enabled_default=False,
     ),
     SonnenbatterieSensorEntityDescription(
+        # cascade master: number of units in the cascade, with their serials
+        # and status ("WORKING") as attributes
+        key="cascade_members",
+        icon="mdi:battery-sync",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        on_slave=False,
+        value_fn=lambda coordinator: (
+            len(info.members)
+            if (info := coordinator.latestData.get("cascade")) and info.members
+            else None
+        ),
+        attrs_fn=lambda coordinator: (
+            {"members": [{"serial": m.serial, "role": m.role, "status": m.status}
+                         for m in info.members]}
+            if (info := coordinator.latestData.get("cascade"))
+            else None
+        ),
+    ),
+    SonnenbatterieSensorEntityDescription(
         key="max_power",
+        on_slave=False,
         icon="mdi:flash",
         # static config value: no state_class, long-term statistics are pointless
         native_unit_of_measurement="W",
@@ -593,6 +623,7 @@ SENSORS: tuple[SonnenbatterieSensorEntityDescription, ...] = (
     ),
     SonnenbatterieSensorEntityDescription(
         key="tou_max_power",
+        on_slave=False,
         icon="mdi:transmission-tower-import",
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,

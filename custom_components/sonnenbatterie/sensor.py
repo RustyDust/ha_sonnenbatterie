@@ -34,16 +34,21 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     # await coordinator.async_refresh()
 
+    # a cascade's slave has no meters and no cascade-wide settings: skip
+    # those sensors and its (unconnected) powermeters
+    slave = coordinator.is_slave
     async_add_entities(
         SonnenbatterieSensor(coordinator=coordinator, entity_description=description)
         for description in SENSORS
-        if description.value_fn(coordinator) is not None
+        if (description.on_slave or not slave)
+        and description.value_fn(coordinator) is not None
     )
 
-    async_add_entities(
-        SonnenbatterieSensor(coordinator=coordinator, entity_description=description)
-        for description in generate_powermeter_sensors(_coordinator=coordinator)
-    )
+    if not slave:
+        async_add_entities(
+            SonnenbatterieSensor(coordinator=coordinator, entity_description=description)
+            for description in generate_powermeter_sensors(_coordinator=coordinator)
+        )
 
     return True
 
@@ -87,3 +92,9 @@ class SonnenbatterieSensor(SonnenBaseEntity, SensorEntity, RestoreEntity):
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
         return self.entity_description.value_fn(self.coordinator)
+
+    @property
+    def extra_state_attributes(self) -> dict | None:
+        if self.entity_description.attrs_fn is None:
+            return None
+        return self.entity_description.attrs_fn(self.coordinator)
