@@ -78,7 +78,11 @@ and controls the cascade, the slaves only report their own unit.
 - Set up the integration for the **master**. Its sensors cover the whole
   cascade (consumption, production, grid, installed capacity, max. power),
   and the diagnostic sensor "Cascade members" shows the number of units,
-  with their serial numbers and status as attributes.
+  with their serial numbers and status as attributes. The battery reports
+  its state of charge (relative), full charge capacity and battery power for
+  the whole cascade on the master, so the master's sensors for these show
+  the cascade, not the master unit alone. The master's battery details
+  (cycles, temperatures, cell voltages) are its own.
 - The master's slaves then show up as discovered devices. Add them to see
   each unit's own values (state of charge, battery power, cycles,
   temperatures, capacity). The master's username and password are suggested;
